@@ -25,7 +25,12 @@ app.get('/', (req, res) => {
 
 
 app.get('/game', (req, res) => {
-    res.render('user/game');
+    if (!req.query.playerName) {
+        return res.status(400).send(ERRORS.MISSING_FIELDS);
+    }
+    const gameBoard = Array(9).fill(null);
+
+    res.render('user/game', { gameBoard });
 });
 
 
