@@ -51,27 +51,24 @@ input[type="text"]{
 }
 
 
-.playerList{
+#playerList{
     display: flex;
     flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
     margin-top: 20px;
 }
 
 
-#player1,
-#player2 {
-    flex: 1;
+#player1, #player2{
+    text-align: center;
     padding: 10px;
     border: 1px solid var(--primary-font-color);
     margin: 5px;
-}
-
-#player1{
     background-color: var(--player-background-color);
+    border-radius: 25px;
 }
-
+#player1{
+    float: left;
+}
 #player2{
-    background-color: var(--primary-font-color);
+    float: right;
 }
