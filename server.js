@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+let cors = require('cors');
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 const ejs = require('ejs');
@@ -16,21 +17,13 @@ app.set('view engine', 'ejs');
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-
-
-
 app.get('/', (req, res) => {
     res.render('main');
 });
 
 
 app.get('/game', (req, res) => {
-    if (!req.query.playerName) {
-        return res.status(400).send(ERRORS.MISSING_FIELDS);
-    }
-    const gameBoard = Array(9).fill(null);
-
-    res.render('user/game', { gameBoard });
+    res.render('user/game');
 });
 
 
