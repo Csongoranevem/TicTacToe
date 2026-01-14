@@ -2,8 +2,13 @@
     --primary-color: #1b1b1b;
     --secondary-color: #3b3b3b;
     --primary-font-color: #e7e7e7;
+
     --success-button-hover-color: #9bf7b0;
     --success-button-color: #189e38;
+    --danger-button-hover-color: #ff7f7f;
+    --danger-button-color: #ff4d4d;
+
+
     --player-background-color: #b4a692;
 }
 
@@ -36,8 +41,17 @@ input[type="text"]{
     color: var(--primary-font-color);
 }
 
+.btn-danger{
+    background-color: var(--danger-button-hover-color);
+    border: 1px solid var(--danger-button-color);
+    color: var(--primary-color);
+    transition: 0.3s;
+}
 
-
+.btn-danger:hover{
+    background-color: var(--danger-button-color);
+    color: var(--primary-font-color);
+}
 
 /*game*/
 
@@ -45,7 +59,7 @@ input[type="text"]{
     display: flex;
     justify-content: center;
     align-items: center;
-    border: 1px solid var(--primary-font-color);
+    border: 0.5px solid var(--secondary-color);
     padding: 10px;
     margin-top: 20px;
 }
@@ -84,4 +98,70 @@ input[type="text"]{
 #player2{
     float: right;
     box-shadow: 0 0 10px blue;
+}
+
+
+
+.gameBoard{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 5px;
+    margin-top: 20px;
+}
+
+.tile{
+    width: 33%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 0.5px solid var(--primary-font-color);
+    transition: 0.2s;
+
+}
+
+.tile:hover{
+    background-color: black;
+    transform: rotate(2deg);
+}
+
+/*tile border változások*/
+
+.b1{
+    border-left: none;
+    border-top: none;
+}
+
+
+.b2{
+    border-top: none;
+}
+
+.b3{
+    border-right: none;
+    border-top: none;
+}
+
+.b4{
+    border-left: none;
+}
+
+
+.b6{
+    border-right: none;
+}
+
+.b7{
+    border-left: none;
+    border-bottom: none;
+}
+
+.b8{
+    border-bottom: none;
+}
+
+.b9{
+    border-right: none;
+    border-bottom: none;
 }
