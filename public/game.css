@@ -49,11 +49,20 @@ input[type="text"]{
     padding: 10px;
     margin-top: 20px;
 }
-
+.gameContainer{
+    width: 400px;
+}
+.players{
+    width: 440px;
+    text-align: center;
+}
 
 #playerList{
+    width: 100%;
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
     margin-top: 20px;
 }
 
@@ -61,14 +70,18 @@ input[type="text"]{
 #player1, #player2{
     text-align: center;
     padding: 10px;
+    width: fit-content;
     border: 1px solid var(--primary-font-color);
     margin: 5px;
     background-color: var(--player-background-color);
     border-radius: 25px;
+    box-shadow: 0 0 10px var(--primary-font-color);
 }
 #player1{
     float: left;
+    
 }
 #player2{
     float: right;
+    box-shadow: 0 0 10px blue;
 }
