@@ -14,6 +14,7 @@ const ERRORS = {
 
 app.set('view engine', 'ejs');
 
+app.use(express.static(path.join(__dirname, 'public')));
 
 
 
@@ -22,7 +23,11 @@ app.get('/', (req, res) => {
     res.render('main');
 });
 
-app.use(express.static(path.join(__dirname, 'public')));
+
+app.get('/game', (req, res) => {
+    res.render('user/game');
+});
+
 
 server.listen(3000, () => {
     console.log(`http://localhost:3000`);
