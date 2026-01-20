@@ -27,16 +27,16 @@ app.get('/', (req, res) => {
 });
 
 app.get('/join', (req, res) => {
-    res.render('user/join');
+    // keep a single-page flow: redirect /join to / (main) so the embedded game fragment exists
+    res.redirect('/');
 });
 
 app.get('/game', (req, res) => {
     res.render('user/game');
 });
 
-// Debug endpoints (dev only) to inspect server room and socket state
 app.get('/debug/games', (req, res) => {
-    // Return a simplified view of games (roomID -> player names)
+
     const out = {};
     for (const roomID in games) {
         out[roomID] = games[roomID].players.map(p => ({ id: p.id, name: p.name }));
@@ -77,7 +77,6 @@ io.on('connection', (socket) => {
             name: playerName
         });
 
-        // Track socket to room
         socketRooms[socket.id] = roomID;
 
         socket.join(roomID);
@@ -90,7 +89,7 @@ io.on('connection', (socket) => {
             roomID: roomID
         });
 
-        // Send authoritative players list to everyone in the room so clients can render names
+
         io.to(roomID).emit('playerUpdate', {
             players: games[roomID].players
         });
@@ -102,7 +101,6 @@ io.on('connection', (socket) => {
                 roomID: roomID
             });
 
-            // Also send an immediate playerUpdate when game starts
             io.to(roomID).emit('playerUpdate', {
                 players: games[roomID].players
             });
@@ -139,18 +137,18 @@ io.on('connection', (socket) => {
             return;
         }
 
-        // Check if this player is already in the room
+
         const playerExists = games[roomID].players.some(p => p.name === playerName);
         
         if (!playerExists) {
             console.log(`Player ${playerName} not found in room, adding them`);
-            // Add player with new socket ID
+
             games[roomID].players.push({
                 id: socket.id,
                 name: playerName
             });
         } else {
-            // Update the socket ID for existing player
+
             const player = games[roomID].players.find(p => p.name === playerName);
             if (player) {
                 console.log(`Updating socket ID for ${playerName} from ${player.id} to ${socket.id}`);
@@ -158,21 +156,18 @@ io.on('connection', (socket) => {
             }
         }
 
-        // Join the socket to the room if not already there
         socket.join(roomID);
-        
-        // Track this socket to the room
+
         socketRooms[socket.id] = roomID;
         
         console.log(`${playerName} re-joined room ${roomID}. Room has ${games[roomID].players.length} players:`, games[roomID].players.map(p => p.name));
 
-        // Send current players to all in room
-        io.to(roomID).emit('playerUpdate', {
+        socket.emit('playerUpdate', {
             players: games[roomID].players
         });
     });
 
-    // Client can request authoritative room state (useful after redirect)
+
     socket.on('requestRoomState', (data) => {
         const { roomID, playerName } = data;
         console.log(`${playerName} requested room state for ${roomID}`);
@@ -185,7 +180,6 @@ io.on('connection', (socket) => {
         socket.join(roomID);
         socketRooms[socket.id] = roomID;
 
-        // Send the authoritative players list to this socket only
         socket.emit('playerUpdate', { players: games[roomID].players });
     });
 });

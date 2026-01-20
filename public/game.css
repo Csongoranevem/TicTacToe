@@ -185,3 +185,8 @@ input[type="text"] {
     border-right: none;
     border-bottom: none;
 }
+
+/* Ensure the embedded game fragment is hidden by default until JS shows it */
+#gameWrapper {
+    display: none;
+}
