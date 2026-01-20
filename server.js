@@ -27,6 +27,10 @@ app.get('/game', (req, res) => {
 });
 
 
+app.post('/leave', (req, res) => {
+    res.render('main');
+});
+
 server.listen(3000, () => {
     console.log(`http://localhost:3000`);
 });
