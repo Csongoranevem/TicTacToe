@@ -15,6 +15,8 @@ const ERRORS = {
 
 // Store active games by room ID
 const games = {};
+// Track which socket is in which room
+const socketRooms = {};
 
 app.set('view engine', 'ejs');
 
@@ -32,13 +34,26 @@ app.get('/game', (req, res) => {
     res.render('user/game');
 });
 
+// Debug endpoints (dev only) to inspect server room and socket state
+app.get('/debug/games', (req, res) => {
+    // Return a simplified view of games (roomID -> player names)
+    const out = {};
+    for (const roomID in games) {
+        out[roomID] = games[roomID].players.map(p => ({ id: p.id, name: p.name }));
+    }
+    res.json({ games: out });
+});
+
+app.get('/debug/sockets', (req, res) => {
+    res.json({ socketRooms });
+});
+
 
 io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
 
     socket.on('join', (data) => {
         const { playerName, roomID } = data;
-
 
         if (!playerName || !roomID) {
             socket.emit('error', ERRORS.MISSING_FIELDS);
@@ -62,9 +77,12 @@ io.on('connection', (socket) => {
             name: playerName
         });
 
+        // Track socket to room
+        socketRooms[socket.id] = roomID;
+
         socket.join(roomID);
 
-        console.log(`${playerName} joined room ${roomID}`);
+        console.log(`${playerName} joined room ${roomID}. Room now has ${games[roomID].players.length} players`);
 
         io.to(roomID).emit('playerJoined', {
             playerName: playerName,
@@ -72,10 +90,21 @@ io.on('connection', (socket) => {
             roomID: roomID
         });
 
+        // Send authoritative players list to everyone in the room so clients can render names
+        io.to(roomID).emit('playerUpdate', {
+            players: games[roomID].players
+        });
+
         if (games[roomID].players.length === 2) {
+            console.log(`Room ${roomID} is full, starting game`);
             io.to(roomID).emit('gameStart', {
                 players: games[roomID].players,
                 roomID: roomID
+            });
+
+            // Also send an immediate playerUpdate when game starts
+            io.to(roomID).emit('playerUpdate', {
+                players: games[roomID].players
             });
         }
     });
@@ -83,7 +112,9 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         console.log('User disconnected:', socket.id);
         
-        for (let roomID in games) {
+        const roomID = socketRooms[socket.id];
+        
+        if (roomID && games[roomID]) {
             games[roomID].players = games[roomID].players.filter(p => p.id !== socket.id);
 
             if (games[roomID].players.length > 0) {
@@ -94,6 +125,68 @@ io.on('connection', (socket) => {
                 delete games[roomID];
             }
         }
+        
+        delete socketRooms[socket.id];
+    });
+
+    socket.on('rejoinRoom', (data) => {
+        const { roomID, playerName } = data;
+        
+        console.log(`${playerName} attempting to rejoin room ${roomID} with new socket ${socket.id}`);
+        
+        if (!roomID || !games[roomID]) {
+            console.log(`Room ${roomID} does not exist`);
+            return;
+        }
+
+        // Check if this player is already in the room
+        const playerExists = games[roomID].players.some(p => p.name === playerName);
+        
+        if (!playerExists) {
+            console.log(`Player ${playerName} not found in room, adding them`);
+            // Add player with new socket ID
+            games[roomID].players.push({
+                id: socket.id,
+                name: playerName
+            });
+        } else {
+            // Update the socket ID for existing player
+            const player = games[roomID].players.find(p => p.name === playerName);
+            if (player) {
+                console.log(`Updating socket ID for ${playerName} from ${player.id} to ${socket.id}`);
+                player.id = socket.id;
+            }
+        }
+
+        // Join the socket to the room if not already there
+        socket.join(roomID);
+        
+        // Track this socket to the room
+        socketRooms[socket.id] = roomID;
+        
+        console.log(`${playerName} re-joined room ${roomID}. Room has ${games[roomID].players.length} players:`, games[roomID].players.map(p => p.name));
+
+        // Send current players to all in room
+        io.to(roomID).emit('playerUpdate', {
+            players: games[roomID].players
+        });
+    });
+
+    // Client can request authoritative room state (useful after redirect)
+    socket.on('requestRoomState', (data) => {
+        const { roomID, playerName } = data;
+        console.log(`${playerName} requested room state for ${roomID}`);
+        if (!roomID || !games[roomID]) {
+            socket.emit('playerUpdate', { players: [] });
+            return;
+        }
+
+        // Ensure socket is in the room and tracked
+        socket.join(roomID);
+        socketRooms[socket.id] = roomID;
+
+        // Send the authoritative players list to this socket only
+        socket.emit('playerUpdate', { players: games[roomID].players });
     });
 });
 
