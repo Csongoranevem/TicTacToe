@@ -28,6 +28,10 @@ app.get('/join', (req, res) => {
     res.render('user/join');
 });
 
+app.get('/game', (req, res) => {
+    res.render('user/game');
+});
+
 
 io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
