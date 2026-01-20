@@ -8,13 +8,18 @@
             <div id="player2">Játékos 2</div>
         </div>
     </div>
+    <div class="currentTurn">
+        <h3>Aktuális kör</h3>
+        <div id="currentPlayer" class="text-center">1. Játékos</div>
+    </div>
+    <!-- Játék tábla -->
     <div class="gameSpace mx-auto">
         <div id="gameBoard" class="d-flex flex-wrap" style="width: 400px; height: 400px;">
             <div class="tile b1"></div>
             <div class="tile b2"></div>
             <div class="tile b3"></div>
             <div class="tile b4"></div>
-            <div class="tile"></div>
+            <div class="tile b5"></div>
             <div class="tile b6"></div>
             <div class="tile b7"></div>
             <div class="tile b8"></div>
@@ -23,7 +28,7 @@
     </div>
 
     <!-- Kilépés gomb (joinra vissza)-->
-    <form action="/leave" method="POST" class="mt-4">
+    <form onsubmit="leaveGame(event)" class="mt-4">
         <button type="submit" class="btn btn-danger">Kilépés</button>
     </form>
 </div>
