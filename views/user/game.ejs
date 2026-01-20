@@ -1,44 +1,47 @@
 <%- include('../system/header') %>
 
-<div class="d-flex flex-column align-items-center mx-auto gameContainer">
-    <div class="gameID">
-        <h3>Játék ID: <span id="gameIDDisplay">---</span></h3>
-    </div>
-    <div class="players">
-        <h3>Játékosok</h3>
-        <div id="playerList">
-            <div id="player1">Várakozás...</div>
-            <div id="player2">Várakozás...</div>
+    <div class="d-flex flex-column align-items-center mx-auto gameContainer">
+        <div class="gameID">
+        </div>
+        <div class="players">
+            <h3>Játékosok</h3>
+            <div id="playerList">
+                <div id="player1">Várakozás...</div>
+                <div id="player2">Várakozás...</div>
+            </div>
+        </div>
+        <div class="currentTurn">
+            <h3>Aktuális kör</h3>
+            <div id="currentPlayer" class="text-center">1. Játékos</div>
+        </div>
+        <!-- Játék tábla -->
+        <div class="gameSpace mx-auto">
+            <div id="gameBoard" class="d-flex flex-wrap" style="width: 400px; height: 400px;">
+                <div class="tile b1" style="color: var(--player2-color)">I</div>
+                <div class="tile b2" style="color:  var(--player1-color);">O</div>
+                <div class="tile b3"></div>
+                <div class="tile b4"></div>
+                <div class="tile b5"></div>
+                <div class="tile b6"></div>
+                <div class="tile b7"></div>
+                <div class="tile b8"></div>
+                <div class="tile b9"></div>
+            </div>
+        </div>
+
+        <!-- Kilépés gomb (joinra vissza)-->
+        <div class="game-bottom mt-3 text-center">
+            <h3>Szoba ID: <span id="gameIDDisplay">---</span></h3>
+
+            <form onsubmit="leaveGame(event)" class="">
+                <button type="submit" class="btn btn-danger">Kilépés</button>
+            </form>
         </div>
     </div>
-    <div class="currentTurn">
-        <h3>Aktuális kör</h3>
-        <div id="currentPlayer" class="text-center">1. Játékos</div>
-    </div>
-    <!-- Játék tábla -->
-    <div class="gameSpace mx-auto">
-        <div id="gameBoard" class="d-flex flex-wrap" style="width: 400px; height: 400px;">
-            <div class="tile b1" style="color: var(--player2-color)">I</div>
-            <div class="tile b2" style="color:  var(--player1-color);">O</div>
-            <div class="tile b3"></div>
-            <div class="tile b4"></div>
-            <div class="tile b5"></div>
-            <div class="tile b6"></div>
-            <div class="tile b7"></div>
-            <div class="tile b8"></div>
-            <div class="tile b9"></div>
-        </div>
-    </div>
-
-    <!-- Kilépés gomb (joinra vissza)-->
-    <form onsubmit="leaveGame(event)" class="mt-4">
-        <button type="submit" class="btn btn-danger">Kilépés</button>
-    </form>
-</div>
 
 
 
 
 
 
-<%- include('../system/footer') %>
+    <%- include('../system/footer') %>

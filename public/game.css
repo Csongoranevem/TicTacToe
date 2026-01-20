@@ -22,6 +22,12 @@ body {
     color: var(--primary-font-color);
 }
 
+header h1{
+    text-align: center;
+    opacity: 0.5;
+}
+
+
 form {
     background-color: var(--secondary-color);
 }
@@ -189,4 +195,19 @@ input[type="text"] {
 /* Ensure the embedded game fragment is hidden by default until JS shows it */
 #gameWrapper {
     display: none;
+}
+
+.game-bottom{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 20px;
+}
+
+.game-bottom h3 {
+    margin: 0;
+    font-size: medium;
+    font-style: italic;
 }
