@@ -91,6 +91,13 @@ input[type="text"]{
     border-radius: 25px;
     box-shadow: 0 0 10px var(--primary-font-color);
 }
+.currentTurn{
+    margin-top: 20px;
+}
+#currentPlayer{
+    font-weight: bold;
+
+}
 #player1{
     float: left;
     
