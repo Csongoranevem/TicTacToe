@@ -1,4 +1,4 @@
-:root{
+:root {
     --primary-color: #1b1b1b;
     --secondary-color: #3b3b3b;
     --primary-font-color: #e7e7e7;
@@ -10,52 +10,55 @@
 
 
     --player-background-color: #b4a692;
+
+    --player1-color: #ff4d4d;
+    --player2-color: #7070ff;
 }
 
 
 
-body{
+body {
     background-color: var(--primary-color);
     color: var(--primary-font-color);
 }
 
-form{
+form {
     background-color: var(--secondary-color);
 }
 
-input[type="text"]{
+input[type="text"] {
     color: var(--primary-color);
     border: 1px solid var(--primary-font-color);
 }
 
 
-.btn-success{
+.btn-success {
     background-color: var(--success-button-hover-color);
     border: 1px solid var(--success-button-color);
     color: var(--primary-color);
     transition: 0.3s;
 }
 
-.btn-success:hover{
+.btn-success:hover {
     background-color: var(--success-button-color);
     color: var(--primary-font-color);
 }
 
-.btn-danger{
+.btn-danger {
     background-color: var(--danger-button-hover-color);
     border: 1px solid var(--danger-button-color);
     color: var(--primary-color);
     transition: 0.3s;
 }
 
-.btn-danger:hover{
+.btn-danger:hover {
     background-color: var(--danger-button-color);
     color: var(--primary-font-color);
 }
 
 /*game*/
 
-.gameSpace{
+.gameSpace {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -63,15 +66,17 @@ input[type="text"]{
     padding: 10px;
     margin-top: 20px;
 }
-.gameContainer{
+
+.gameContainer {
     width: 400px;
 }
-.players{
+
+.players {
     width: 440px;
     text-align: center;
 }
 
-#playerList{
+#playerList {
     width: 100%;
     display: flex;
     flex-direction: row;
@@ -81,7 +86,8 @@ input[type="text"]{
 }
 
 
-#player1, #player2{
+#player1,
+#player2 {
     text-align: center;
     padding: 10px;
     width: fit-content;
@@ -91,25 +97,29 @@ input[type="text"]{
     border-radius: 25px;
     box-shadow: 0 0 10px var(--primary-font-color);
 }
-.currentTurn{
+
+.currentTurn {
     margin-top: 20px;
 }
-#currentPlayer{
+
+#currentPlayer {
     font-weight: bold;
 
 }
-#player1{
+
+#player1 {
     float: left;
-    
+
 }
-#player2{
+
+#player2 {
     float: right;
     box-shadow: 0 0 10px blue;
 }
 
 
 
-.gameBoard{
+.gameBoard {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(3, 1fr);
@@ -117,7 +127,7 @@ input[type="text"]{
     margin-top: 20px;
 }
 
-.tile{
+.tile {
     width: 33%;
     display: flex;
     flex-direction: column;
@@ -126,49 +136,52 @@ input[type="text"]{
     border: 0.5px solid var(--primary-font-color);
     transition: 0.2s;
 
+
+    font-family: "Comic Relief", system-ui;
+    font-size: 500%;
 }
 
-.tile:hover{
+.tile:hover {
     background-color: black;
     transform: rotate(2deg);
 }
 
 /*tile border változások*/
 
-.b1{
+.b1 {
     border-left: none;
     border-top: none;
 }
 
 
-.b2{
+.b2 {
     border-top: none;
 }
 
-.b3{
+.b3 {
     border-right: none;
     border-top: none;
 }
 
-.b4{
+.b4 {
     border-left: none;
 }
 
 
-.b6{
+.b6 {
     border-right: none;
 }
 
-.b7{
+.b7 {
     border-left: none;
     border-bottom: none;
 }
 
-.b8{
+.b8 {
     border-bottom: none;
 }
 
-.b9{
+.b9 {
     border-right: none;
     border-bottom: none;
 }
