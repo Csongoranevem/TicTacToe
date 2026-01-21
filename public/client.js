@@ -1,7 +1,13 @@
 const socket = io();
 
-let RoomIDField = document.getElementById("RoomID");
-let playerNameField = document.getElementById("playerName");
+// Lazy DOM lookup helper
+function getInputFields() {
+    return {
+        RoomIDField: document.getElementById('RoomID'),
+        playerNameField: document.getElementById('playerName'),
+        joinForm: document.getElementById('joinForm')
+    };
+}
 
 let currentGameID = null;
 let currentPlayerName = null;
@@ -13,236 +19,282 @@ function GenerateRandomRoom6characters() {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
 }
 
+function fillRandomRoomID() {
+    const { RoomIDField } = getInputFields();
+    if (RoomIDField) RoomIDField.value = GenerateRandomRoom6characters();
+}
+
 function joinGame(event) {
     event.preventDefault();
-    
+    const { RoomIDField, playerNameField } = getInputFields();
+    if (!RoomIDField || !playerNameField) { alert('Frissítsd az oldalt, mezők nem elérhetők.'); return; }
+
     const playerName = playerNameField.value.trim();
     const roomID = RoomIDField.value.trim();
-    
-    if (!playerName || !roomID) {
-        alert("Kérlek töltsd ki az összes mezőt!");
-        return;
-    }
+    if (!playerName || !roomID) { alert('Kérlek töltsd ki az összes mezőt!'); return; }
+
     currentGameID = roomID;
     currentPlayerName = playerName;
-    
-    // Store in sessionStorage to persist across page navigation
+
     sessionStorage.setItem('gameID', roomID);
     sessionStorage.setItem('playerName', playerName);
-    
-    socket.emit('join', {
-        playerName: playerName,
-        roomID: roomID
-    });
 
-    // Immediately show embedded game fragment (no redirect) so socket persists
+    socket.emit('join', { playerName, roomID });
     showGameFragment();
 }
 
 function leaveGame(event) {
-    event.preventDefault();
-    // leave the room but keep the socket if you want, here we'll fully disconnect
+    if (event) event.preventDefault();
     socket.emit('leaveRoom', { roomID: currentGameID, playerName: currentPlayerName });
-    socket.disconnect();
+    try { socket.disconnect(); } catch (e) {}
     hideGameFragment();
 }
 
-function showGameFragment() {
-    const joinForm = document.getElementById('joinForm');
-    if (joinForm) joinForm.style.display = 'none';
+function createGameFragment() {
+    const wrapper = document.createElement('div');
+    wrapper.id = 'gameWrapper';
+    wrapper.className = 'd-flex flex-column align-items-center mx-auto gameContainer';
+    wrapper.style.display = 'flex';
 
-    // Create game wrapper DOM if it doesn't exist
-    let gameWrapper = document.getElementById('gameWrapper');
-    if (!gameWrapper) {
-        gameWrapper = document.createElement('div');
-        gameWrapper.id = 'gameWrapper';
-        gameWrapper.className = 'd-flex flex-column align-items-center mx-auto gameContainer';
-        gameWrapper.style.display = 'flex';
-        gameWrapper.innerHTML = `
-            <div class="gameID">
-                <h3>Játék ID: <span id="gameIDDisplay">---</span></h3>
-            </div>
-            <div class="players">
-                <h3>Játékosok</h3>
-                <div id="playerList">
-                    <div id="player1">Várakozás...</div>
-                    <div id="player2">Várakozás...</div>
-                </div>
-            </div>
-            <div class="currentTurn">
-                <h3>Aktuális kör</h3>
-                <div id="currentPlayer" class="text-center">1. Játékos</div>
-            </div>
-            <div class="gameSpace mx-auto">
-                <div id="gameBoard" class="d-flex flex-wrap" style="width: 400px; height: 400px;">
-                    <div class="tile b1"></div>
-                    <div class="tile b2"></div>
-                    <div class="tile b3"></div>
-                    <div class="tile b4"></div>
-                    <div class="tile b5"></div>
-                    <div class="tile b6"></div>
-                    <div class="tile b7"></div>
-                    <div class="tile b8"></div>
-                    <div class="tile b9"></div>
-                </div>
-            </div>
-            <form onsubmit="leaveGame(event)" class="mt-4">
-                <button type="submit" class="btn btn-danger">Kilépés</button>
-            </form>
-        `;
+    // empty gameID div (matches provided HTML)
+    const gameIDDiv = document.createElement('div');
+    gameIDDiv.className = 'gameID';
+    wrapper.appendChild(gameIDDiv);
 
-        // Append after the join form
-        if (joinForm && joinForm.parentNode) {
-            joinForm.parentNode.insertBefore(gameWrapper, joinForm.nextSibling);
-        } else {
-            document.body.appendChild(gameWrapper);
-        }
-    } else {
-        gameWrapper.style.display = 'flex';
+    // players section
+    const playersDiv = document.createElement('div');
+    playersDiv.className = 'players';
+    const playersH3 = document.createElement('h3');
+    playersH3.textContent = 'Játékosok';
+    playersDiv.appendChild(playersH3);
+    const playerList = document.createElement('div');
+    playerList.id = 'playerList';
+    const p1 = document.createElement('div'); p1.id = 'player1'; p1.textContent = 'Várakozás...';
+    const p2 = document.createElement('div'); p2.id = 'player2'; p2.textContent = 'Várakozás...';
+    playerList.appendChild(p1); playerList.appendChild(p2);
+    playersDiv.appendChild(playerList);
+    wrapper.appendChild(playersDiv);
+
+    // current turn
+    const currentTurnDiv = document.createElement('div'); currentTurnDiv.className = 'currentTurn';
+    const currentTurnH3 = document.createElement('h3'); currentTurnH3.textContent = 'Aktuális kör';
+    const currentPlayerDiv = document.createElement('div'); currentPlayerDiv.id = 'currentPlayer'; currentPlayerDiv.className = 'text-center'; currentPlayerDiv.textContent = '1. Játékos';
+    currentTurnDiv.appendChild(currentTurnH3); currentTurnDiv.appendChild(currentPlayerDiv);
+    wrapper.appendChild(currentTurnDiv);
+
+    // game space + board with prefilled tiles (I and O) matching provided HTML
+    const gameSpace = document.createElement('div'); gameSpace.className = 'gameSpace mx-auto';
+    const board = document.createElement('div'); board.id = 'gameBoard'; board.className = 'd-flex flex-wrap'; board.style.width = '400px'; board.style.height = '400px';
+
+    for (let i = 1; i <= 9; i++) {
+        const tile = document.createElement('div');
+        tile.className = 'tile b' + i;
+        board.appendChild(tile);
     }
 
-    // Immediately update display
+    gameSpace.appendChild(board);
+    wrapper.appendChild(gameSpace);
+
+    // result banner (hidden until game over)
+    const resultBanner = document.createElement('div');
+    resultBanner.id = 'gameResultBanner';
+    resultBanner.style.display = 'none';
+    resultBanner.style.marginTop = '12px';
+    wrapper.appendChild(resultBanner);
+
+    // game-bottom
+    const gameBottom = document.createElement('div');
+    gameBottom.className = 'game-bottom mt-3 text-center';
+    const roomH3 = document.createElement('h3');
+    roomH3.innerHTML = 'Szoba ID: <span id="gameIDDisplay">---</span>';
+    gameBottom.appendChild(roomH3);
+
+    const exitForm = document.createElement('form');
+    exitForm.onsubmit = function(e) { leaveGame(e); };
+    const exitBtn = document.createElement('button'); exitBtn.type = 'submit'; exitBtn.className = 'btn btn-danger'; exitBtn.textContent = 'Kilépés';
+    exitForm.appendChild(exitBtn);
+    gameBottom.appendChild(exitForm);
+    // restart container (populated after round ends)
+    const restartContainer = document.createElement('div');
+    restartContainer.id = 'restartContainer';
+    restartContainer.style.marginTop = '8px';
+    gameBottom.appendChild(restartContainer);
+    wrapper.appendChild(gameBottom);
+
+    return wrapper;
+}
+
+function showGameFragment() {
+    const { joinForm } = getInputFields();
+    if (joinForm) joinForm.style.display = 'none';
+    let gw = document.getElementById('gameWrapper');
+    if (!gw) {
+        gw = createGameFragment();
+        const { joinForm } = getInputFields();
+        if (joinForm && joinForm.parentNode) joinForm.parentNode.insertBefore(gw, joinForm.nextSibling);
+        else document.body.appendChild(gw);
+    } else gw.style.display = 'flex';
     updateGameDisplay();
 }
 
 function hideGameFragment() {
-    const gameWrapper = document.getElementById('gameWrapper');
-    const joinForm = document.getElementById('joinForm');
-    if (joinForm) joinForm.style.display = '';
-    if (gameWrapper && gameWrapper.parentNode) {
-        // remove the fragment entirely so it can't show before join
-        gameWrapper.parentNode.removeChild(gameWrapper);
-    }
-    // clear session
-    sessionStorage.removeItem('gameID');
-    sessionStorage.removeItem('playerName');
-    sessionStorage.removeItem('players');
-    currentGameID = null;
-    currentPlayerName = null;
-    gamePlayers = [];
-    hasRejoined = false;
+    const gw = document.getElementById('gameWrapper');
+    const { joinForm } = getInputFields(); if (joinForm) joinForm.style.display = '';
+    if (gw && gw.parentNode) gw.parentNode.removeChild(gw);
+    sessionStorage.removeItem('gameID'); sessionStorage.removeItem('playerName'); sessionStorage.removeItem('players');
+    currentGameID = null; currentPlayerName = null; gamePlayers = []; hasRejoined = false; prevGameID = null;
 }
 
 function updateGameDisplay() {
-    // Read from sessionStorage
     const gameID = sessionStorage.getItem('gameID');
     const playerName = sessionStorage.getItem('playerName');
     const playersData = sessionStorage.getItem('players');
-    
-    // Update current variables
-    // Reset hasRejoined only when the stored prevGameID differs
-    if (prevGameID !== gameID) {
-        hasRejoined = false;
-    }
-    prevGameID = currentGameID;
-    currentGameID = gameID;
-    currentPlayerName = playerName;
-    if (playersData) {
-        gamePlayers = JSON.parse(playersData);
-    }
-    
-    const gameIDElement = document.getElementById('gameIDDisplay');
-    const player1Element = document.getElementById('player1');
-    const player2Element = document.getElementById('player2');
-    
-    // Only update if on game page (these elements don't exist on join page)
-    if (gameIDElement) {
-        gameIDElement.textContent = gameID || '---';
-        
-        console.log('Updating display. gamePlayers:', gamePlayers);
-        
+
+    if (prevGameID !== gameID) hasRejoined = false;
+    prevGameID = currentGameID; currentGameID = gameID; currentPlayerName = playerName;
+    if (playersData) gamePlayers = JSON.parse(playersData);
+
+    const gameIDElem = document.getElementById('gameIDDisplay');
+    const p1 = document.getElementById('player1'); const p2 = document.getElementById('player2');
+    if (gameIDElem) {
+        gameIDElem.textContent = gameID || '---';
         if (gamePlayers && gamePlayers.length >= 2) {
-            // Both players have joined
-            if (player1Element && gamePlayers[0]) {
-                player1Element.textContent = gamePlayers[0].name;
-            }
-            if (player2Element && gamePlayers[1]) {
-                player2Element.textContent = gamePlayers[1].name;
-            }
+            if (p1) p1.textContent = gamePlayers[0].name;
+            if (p2) p2.textContent = gamePlayers[1].name;
         } else if (playerName) {
-            // Only one player (self)
-            if (player1Element) {
-                player1Element.textContent = playerName;
-            }
-            if (player2Element) {
-                player2Element.textContent = 'Várakozás...';
-            }
+            if (p1) p1.textContent = playerName;
+            if (p2) p2.textContent = 'Várakozás...';
         }
-        
-        // Re-join the socket room on game page (only once to avoid loops)
+
         if (gameID && playerName && !hasRejoined) {
-            console.log('Re-joining room (once):', gameID, 'with player:', playerName);
-            socket.emit('rejoinRoom', { roomID: gameID, playerName: playerName });
+            socket.emit('rejoinRoom', { roomID: gameID, playerName });
             hasRejoined = true;
         }
     }
 }
 
+function renderBoard(board) {
+    const boardEl = document.getElementById('gameBoard');
+    if (!boardEl) return;
+    boardEl.innerHTML = '';
+    for (let i = 0; i < 9; i++) {
+        const tile = document.createElement('div');
+        tile.className = 'tile b' + (i+1);
+        tile.dataset.index = i;
+        const val = board[i];
+        if (val) {
+            tile.textContent = val;
+            tile.classList.add('symbol');
+            tile.classList.add(val === 'X' ? 'sym-x' : 'sym-o');
+            tile.style.cursor = 'default';
+        } else {
+            tile.textContent = '';
+            tile.classList.remove('symbol', 'sym-x', 'sym-o');
+            tile.style.cursor = 'pointer';
+        }
+        tile.addEventListener('click', () => {
+            const pn = sessionStorage.getItem('playerName');
+            if (!pn) return;
+            socket.emit('makeMove', { roomID: currentGameID, index: i, playerName: pn });
+        });
+        boardEl.appendChild(tile);
+    }
+}
+
 socket.on('playerJoined', (data) => {
-    console.log('Player joined:', data);
-    currentGameID = data.roomID;
-    gamePlayers = [];
-    
+    if (!data) return;
     sessionStorage.setItem('gameID', data.roomID);
     sessionStorage.setItem('playersCount', data.playersInRoom);
-    
-    console.log('Showing game fragment (playerJoined)');
     showGameFragment();
-});
-
-
-socket.on('gameStart', (data) => {
-    console.log('Game started:', data);
-    currentGameID = data.roomID;
-    gamePlayers = data.players;
-    
-    sessionStorage.setItem('gameID', data.roomID);
-    sessionStorage.setItem('players', JSON.stringify(data.players));
-    console.log('gameStart stored players:', data.players);
-    
-    // Update display immediately if already on game page
-    showGameFragment();
-    updateGameDisplay();
-});
-
-
-socket.on('error', (message) => {
-    console.error('Error:', message);
-    alert(message);
-});
-
-
-socket.on('playerLeft', () => {
-    console.log('Other player left the game');
-    alert('Az ellenfél elhagyta a játékot!');
-    window.location.href = '/';
 });
 
 socket.on('playerUpdate', (data) => {
-    console.log('Player update received:', data);
     if (data && data.players) {
-        gamePlayers = data.players;
-        console.log('gamePlayers updated to:', gamePlayers);
-        
-        // Update sessionStorage with the players data
         sessionStorage.setItem('players', JSON.stringify(data.players));
-        console.log('sessionStorage updated with players');
-        
+        gamePlayers = data.players;
         updateGameDisplay();
-    } else {
-        console.log('playerUpdate data invalid:', data);
     }
 });
 
+socket.on('gameStart', (data) => {
+    if (!data) return;
+    sessionStorage.setItem('gameID', data.roomID);
+    sessionStorage.setItem('players', JSON.stringify(data.players || []));
+    gamePlayers = data.players || [];
+    showGameFragment();
+    if (data.gameState && data.gameState.board)
+        {
+            renderBoard(data.gameState.board);
+        }
+    const rc = document.getElementById('restartContainer'); if (rc) rc.innerHTML = '';
+    const banner = document.getElementById('gameResultBanner'); if (banner) { banner.style.display = 'none'; banner.textContent = ''; }
+});
+
+socket.on('gameState', (data) => {
+    if (!data) return;
+    if (data.board) renderBoard(data.board);
+    if (typeof data.currentTurn === 'number') {
+        const cur = document.getElementById('currentPlayer');
+        if (cur && gamePlayers && gamePlayers[data.currentTurn]) cur.textContent = gamePlayers[data.currentTurn].name + ' következik';
+    }
+});
+
+socket.on('gameOver', (data) => {
+    if (!data) return;
+    renderBoard(data.board || Array(9).fill(null));
+    const banner = document.getElementById('gameResultBanner');
+    if (banner) {
+        if (data.outcome === 'draw') {
+            banner.textContent = 'Döntetlen!';
+        } else if (data.outcome === 'win') {
+            const winner = data.winnerName || data.symbol || 'Győztes';
+            banner.textContent = 'Győzött: ' + winner;
+        }
+        banner.style.display = 'block';
+    }
+    const rc = document.getElementById('restartContainer');
+    if (rc) {
+        rc.innerHTML = '';
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-primary';
+        btn.textContent = 'Újraindít';
+        btn.onclick = function() {
+            socket.emit('restartGame', { roomID: currentGameID });
+        };
+        rc.appendChild(btn);
+    }
+});
+
+socket.on('playerLeft', () => {
+    alert('Az ellenfél elhagyta a játékot.');
+    hideGameFragment();
+});
+
+
+socket.on('errorMessage', (m) => {
+    if (!m) return;
+    const banner = document.getElementById('gameResultBanner');
+    if (banner) {
+        banner.textContent = m;
+        banner.style.display = 'block';
+        banner.style.backgroundColor = 'var(--accent)';
+    } else {
+        alert(m);
+    }
+    setTimeout(() => {
+        const banner = document.getElementById('gameResultBanner');
+        if (banner) {
+            banner.style.display = 'none';
+            banner.textContent = '';
+        }
+    }, 3000);
+});
+
 window.addEventListener('load', () => {
-    // Give socket events time to arrive then request authoritative room state
     setTimeout(() => {
         updateGameDisplay();
         const gameID = sessionStorage.getItem('gameID');
         const playerName = sessionStorage.getItem('playerName');
-        if (gameID && playerName) {
-            console.log('Requesting room state for', gameID);
-            socket.emit('requestRoomState', { roomID: gameID, playerName: playerName });
-        }
+        if (gameID && playerName) socket.emit('requestRoomState', { roomID: gameID, playerName });
     }, 100);
 });
