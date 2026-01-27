@@ -1,7 +1,4 @@
 <div id="gameWrapper" class="d-flex flex-column align-items-center mx-auto gameContainer" style="display: none;">
-    <div class="gameID">
-        <h3>Játék ID: <span id="gameIDDisplay">---</span></h3>
-    </div>
     <div class="players">
         <h3>Játékosok</h3>
         <div id="playerList">
@@ -28,8 +25,15 @@
         </div>
     </div>
 
-    <!-- Kilépés gomb (joinra vissza)-->
-    <form onsubmit="leaveGame(event)" class="mt-4">
-        <button type="submit" class="btn btn-danger">Kilépés</button>
-    </form>
+</form>
+
+    <!-- Kilépés gomb (joinra vissza) + bottom game ID -->
+    <div class="game-bottom mt-3 text-center">
+        <h3>Szoba ID: <span id="gameIDDisplay">---</span></h3>
+
+        <form onsubmit="leaveGame(event)" class="">
+            <button type="submit" class="btn btn-danger">Kilépés</button>
+        </form>
+    </div>
+</div>
 </div>

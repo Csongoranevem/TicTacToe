@@ -59,9 +59,6 @@ function showGameFragment() {
         gameWrapper.className = 'd-flex flex-column align-items-center mx-auto gameContainer';
         gameWrapper.style.display = 'flex';
         gameWrapper.innerHTML = `
-            <div class="gameID">
-                <h3>Játék ID: <span id="gameIDDisplay">---</span></h3>
-            </div>
             <div class="players">
                 <h3>Játékosok</h3>
                 <div id="playerList">
@@ -86,9 +83,14 @@ function showGameFragment() {
                     <div class="tile b9"></div>
                 </div>
             </div>
-            <form onsubmit="leaveGame(event)" class="mt-4">
-                <button type="submit" class="btn btn-danger">Kilépés</button>
-            </form>
+                <!-- Kilépés gomb (joinra vissza) + bottom game ID -->
+                <div class="game-bottom mt-3 text-center">
+                    <h3>Szoba ID: <span id="gameIDDisplay">---</span></h3>
+
+                    <form onsubmit="leaveGame(event)" class="">
+                        <button type="submit" class="btn btn-danger">Kilépés</button>
+                    </form>
+                </div>
         `;
 
         // Append after the join form
