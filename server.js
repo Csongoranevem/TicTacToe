@@ -82,8 +82,9 @@ io.on('connection', (socket) => {
 
         console.log(`${playerName} joined room ${roomID}. players: ${games[roomID].players.map(p=>p.name).join(',')}`);
 
-        io.to(roomID).emit('playerJoined', { playerName, playersInRoom: games[roomID].players.length, roomID });
-        io.to(roomID).emit('playerUpdate', { players: games[roomID].players });
+    // Emit joined notification including the current players array so clients can update immediately
+    io.to(roomID).emit('playerJoined', { playerName, playersInRoom: games[roomID].players.length, roomID, players: games[roomID].players });
+    io.to(roomID).emit('playerUpdate', { players: games[roomID].players });
 
         if (games[roomID].players.length === 2) {
             games[roomID].gameInProgress = true;
@@ -110,11 +111,13 @@ io.on('connection', (socket) => {
             games[roomID].players.push({ id: socket.id, name: playerName, symbol });
         }
 
-        socket.join(roomID);
-        socketRooms[socket.id] = roomID;
+    socket.join(roomID);
+    socketRooms[socket.id] = roomID;
 
-        socket.emit('playerUpdate', { players: games[roomID].players });
-        socket.emit('gameState', { board: games[roomID].board, currentTurn: games[roomID].currentTurn });
+    // Broadcast the updated players list to the whole room (so everyone sees the rejoined player)
+    io.to(roomID).emit('playerUpdate', { players: games[roomID].players });
+    // Send the current game state to the rejoined socket only
+    socket.emit('gameState', { board: games[roomID].board, currentTurn: games[roomID].currentTurn });
     });
 
     socket.on('requestRoomState', (data) => {

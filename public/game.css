@@ -134,16 +134,18 @@ input[type="text"] {
 
 .tile {
     width: 33%;
+    max-height: 133px;
+    min-height: 133px;
     display: flex;
     align-items: center;
     justify-content: center;
     border: 0.5px solid var(--primary-font-color);
+    border-radius: 6px;
     transition: 0.15s ease;
     background: rgba(255,255,255,0.01);
-    border-radius: 6px;
     box-sizing: border-box;
     font-family: "Comic Relief", system-ui;
-    font-size: 2rem;
+    font-size: 30px;
     color: var(--primary-font-color);
 }
 
@@ -157,11 +159,11 @@ input[type="text"] {
     font-weight: 700;
 }
 .tile.sym-x {
-    font-size: 1.3rem;
+    font-size: 2rem;
     color: var(--player1-color);
 }
 .tile.sym-o {
-    font-size: 1.3rem;
+    font-size: 2rem;
     color: var(--player2-color);
 }
 
@@ -230,4 +232,28 @@ input[type="text"] {
     padding: 8px 12px;
     border-radius: 6px;
     font-weight: 700;
+}
+
+
+.animate {
+    animation: winAnimation 1.3s ease-in-out;
+}
+
+@keyframes winAnimation {
+    0% {
+        box-shadow: none;
+
+    }
+
+    30% {
+        border: 4px solid var(--player1-color);
+        box-shadow: 0 0 40px 10px var(--player1-color);
+    }
+    60% {
+        border: 4px solid var(--player2-color);
+        box-shadow: 0 0 40px 10px var(--player2-color);
+    }
+    100% {
+        box-shadow: none;
+    }
 }

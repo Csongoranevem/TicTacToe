@@ -40,6 +40,8 @@ function joinGame(event) {
     sessionStorage.setItem('playerName', playerName);
 
     socket.emit('join', { playerName, roomID });
+    // Prevent the automatic rejoin logic from running immediately after a fresh join
+    hasRejoined = true;
     showGameFragment();
 }
 
@@ -176,10 +178,8 @@ function updateGameDisplay() {
 function renderBoard(board) {
     const boardEl = document.getElementById('gameBoard');
     if (!boardEl) return;
-    boardEl.innerHTML = '';
     for (let i = 0; i < 9; i++) {
-        const tile = document.createElement('div');
-        tile.className = 'tile b' + (i+1);
+        const tile = document.getElementsByClassName('tile b' + (i+1))[0];
         tile.dataset.index = i;
         const val = board[i];
         if (val) {
@@ -197,7 +197,6 @@ function renderBoard(board) {
             if (!pn) return;
             socket.emit('makeMove', { roomID: currentGameID, index: i, playerName: pn });
         });
-        boardEl.appendChild(tile);
     }
 }
 
@@ -205,6 +204,10 @@ socket.on('playerJoined', (data) => {
     if (!data) return;
     sessionStorage.setItem('gameID', data.roomID);
     sessionStorage.setItem('playersCount', data.playersInRoom);
+    if (data.players) {
+        sessionStorage.setItem('players', JSON.stringify(data.players));
+        gamePlayers = data.players;
+    }
     showGameFragment();
 });
 
@@ -231,6 +234,17 @@ socket.on('gameStart', (data) => {
 });
 
 socket.on('gameState', (data) => {
+    // Update player turn
+    const player1Div = document.getElementById('player1');
+    const player2Div = document.getElementById('player2');
+    if (data.currentTurn === 0) {
+        player1Div.style.border = '5px solid var(--player1-color)';
+        player2Div.style.border = 'none';
+    } else {
+        player1Div.style.border = 'none';
+        player2Div.style.border = '5px solid var(--player2-color)';
+    }
+    // Update game board
     if (!data) return;
     if (data.board) renderBoard(data.board);
     if (typeof data.currentTurn === 'number') {
@@ -238,6 +252,8 @@ socket.on('gameState', (data) => {
         if (cur && gamePlayers && gamePlayers[data.currentTurn]) cur.textContent = gamePlayers[data.currentTurn].name + ' következik';
     }
 });
+
+
 
 socket.on('gameOver', (data) => {
     if (!data) return;
@@ -249,6 +265,13 @@ socket.on('gameOver', (data) => {
         } else if (data.outcome === 'win') {
             const winner = data.winnerName || data.symbol || 'Győztes';
             banner.textContent = 'Győzött: ' + winner;
+            const winBoardAnimation = document.getElementById('gameBoard');
+            if (winBoardAnimation) {
+                winBoardAnimation.classList.add('animate');
+                setTimeout(() => {
+                    winBoardAnimation.classList.remove('animate');
+                }, 3000);
+            }
         }
         banner.style.display = 'block';
     }
@@ -256,7 +279,7 @@ socket.on('gameOver', (data) => {
     if (rc) {
         rc.innerHTML = '';
         const btn = document.createElement('button');
-        btn.className = 'btn btn-primary';
+        btn.className = 'btn btn-primary restart';
         btn.textContent = 'Újraindít';
         btn.onclick = function() {
             socket.emit('restartGame', { roomID: currentGameID });
