@@ -96,7 +96,7 @@ input[type="text"] {
 #player2 {
     text-align: center;
     padding: 10px;
-    width: fit-content;
+    width: 33%;
     border: 1px solid var(--primary-font-color);
     margin: 5px;
     background-color: var(--player-background-color);
@@ -120,7 +120,6 @@ input[type="text"] {
 
 #player2 {
     float: right;
-    box-shadow: 0 0 10px blue;
 }
 
 
@@ -136,23 +135,36 @@ input[type="text"] {
 .tile {
     width: 33%;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
     border: 0.5px solid var(--primary-font-color);
-    transition: 0.2s;
-
-
+    transition: 0.15s ease;
+    background: rgba(255,255,255,0.01);
+    border-radius: 6px;
+    box-sizing: border-box;
     font-family: "Comic Relief", system-ui;
-    font-size: 500%;
+    font-size: 2rem;
+    color: var(--primary-font-color);
 }
 
 .tile:hover {
-    background-color: black;
-    transform: rotate(2deg);
+    background-color: rgba(255,255,255,0.04);
+    transform: translateY(-2px);
 }
 
-/*tile border változások*/
+
+.tile.symbol {
+    font-weight: 700;
+}
+.tile.sym-x {
+    font-size: 1.3rem;
+    color: var(--player1-color);
+}
+.tile.sym-o {
+    font-size: 1.3rem;
+    color: var(--player2-color);
+}
+
 
 .b1 {
     border-left: none;
@@ -192,7 +204,6 @@ input[type="text"] {
     border-bottom: none;
 }
 
-/* Ensure the embedded game fragment is hidden by default until JS shows it */
 #gameWrapper {
     display: none;
 }
@@ -210,4 +221,13 @@ input[type="text"] {
     margin: 0;
     font-size: medium;
     font-style: italic;
+}
+
+/* Result banner */
+#gameResultBanner {
+    background: rgba(0,0,0,0.6);
+    color: var(--primary-font-color);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-weight: 700;
 }
